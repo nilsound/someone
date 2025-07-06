@@ -425,14 +425,14 @@
       "你是否爱着你创造出的一切？"
     ];
 
-    // 配置您的Google Apps Script Web应用URL
+    //Google Apps Script Web应用URL
     const scriptUrl = 'https://script.google.com/macros/s/AKfycbwC-BRENcDC78Y-DlO_ZnGXr8S8X-w0rx4gh6zMvj6miiA8krXqOMX5i_iMdpFNJ2wX/exec';
     
-    var answers = [];
-    var current = 0;
-    var showingAllData = false;
-    var danmuInterval;
-    var selectedColor = '#FF5252';
+    let answers = [];
+    let current = 0;
+    let showingAllData = false;
+    let danmuInterval;
+    let selectedColor = '#FF5252';
 
     // 页面加载时直接显示问题
     window.onload = function() {
