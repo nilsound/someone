@@ -212,7 +212,6 @@
       box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
     }
     
-    /* 弹幕样式 */
     .danmu-container {
       position: fixed;
       top: 0;
@@ -237,7 +236,6 @@
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
     
-    /* 进度条样式 */
     .progress-container {
       width: 100%;
       background-color: #e0e0e0;
@@ -260,41 +258,19 @@
       color: var(--text-color);
     }
     
-  /* 修改后的CSS样式 */
-  .hidden-text {
-    opacity: 0;
-    transition: opacity 0.3s;
-    margin-top: 30px;
-    font-size: 16px;
-    line-height: 1.6;
-    cursor: default;
-  }
+    .hidden-text {
+      opacity: 0;
+      transition: opacity 0.3s;
+      margin-top: 30px;
+      font-size: 16px;
+      line-height: 1.6;
+      cursor: default;
+    }
 
-  .hidden-text:hover {
-    opacity: 1;
-  }
-  
-  .hidden-text:hover {
-    opacity: 1;
-  }
-
-
-    
     .hidden-text:hover {
       opacity: 1;
     }
     
-    @keyframes danmu {
-      from { transform: translateX(100vw); }
-      to { transform: translateX(-100%); }
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    /* 新增感谢文字样式 */
     .thanks-text {
       position: relative;
       display: inline-block;
@@ -318,7 +294,6 @@
       opacity: 0.6;
     }
     
-    /* 颜色选择器样式 */
     .color-picker {
       display: flex;
       gap: 8px;
@@ -344,7 +319,6 @@
       box-shadow: 0 0 5px rgba(0,0,0,0.3);
     }
     
-    /* 响应式调整 */
     @media (max-width: 480px) {
       .container {
         padding: 25px;
@@ -368,6 +342,16 @@
         width: 100%;
         margin-top: 5px;
       }
+    }
+    
+    @keyframes danmu {
+      from { transform: translateX(100vw); }
+      to { transform: translateX(-100%); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
   </style>
 </head>
@@ -441,23 +425,22 @@
       "你是否爱着你创造出的一切？"
     ];
 
-    // 预设颜色选项
-    const colorOptions = [
-      '#FF5252', '#FF4081', '#E040FB', '#7C4DFF', 
-      '#536DFE', '#448AFF', '#40C4FF', '#18FFFF', 
-      '#64FFDA', '#69F0AE', '#B2FF59', '#EEFF41', 
-      '#FFFF00', '#FFD740', '#FFAB40', '#FF6E40'
-    ];
-
+    // 配置您的Google Apps Script Web应用URL
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbwC-BRENcDC78Y-DlO_ZnGXr8S8X-w0rx4gh6zMvj6miiA8krXqOMX5i_iMdpFNJ2wX/exec';
+    
     var answers = [];
     var current = 0;
     var showingAllData = false;
     var danmuInterval;
-    var selectedColor = '#FF5252'; // 默认红色
+    var selectedColor = '#FF5252';
+
+    // 页面加载时直接显示问题
+    window.onload = function() {
+      showQuestion(current);
+    };
 
     function showQuestion(index) {
       document.getElementById('questionText').innerText = questions[index];
-      // 更新进度条
       updateProgress(index + 1, questions.length);
       
       if (index >= 38) {
@@ -472,8 +455,55 @@
       document.getElementById('progressText').textContent = `问题 ${current}/${total}`;
     }
 
+    // 更新回答统计数据到Google Sheets
+    async function updateAnswerStats(questionIndex, answer) {
+      try {
+        const response = await fetch(scriptUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: 'answer',
+            questionIndex: questionIndex,
+            answer: answer
+          })
+        });
+        
+        const result = await response.json();
+        console.log(`Updated question ${questionIndex + 1} answer ${answer}`, result);
+      } catch (error) {
+        console.error('Error updating answer stats:', error);
+      }
+    }
+
+    // 添加评论到表格
+    async function addCommentToSheet(comment) {
+      try {
+        const response = await fetch(scriptUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: 'comment',
+            comment: comment
+          })
+        });
+        
+        const result = await response.json();
+        console.log('Comment added to sheet', result);
+      } catch (error) {
+        console.error('Error adding comment to sheet:', error);
+      }
+    }
+
     function nextQuestion(answer) {
       answers.push(answer);
+      
+      // 上传答案到Google Sheets
+      updateAnswerStats(current, answer);
+      
       current++;
       if (current < questions.length) {
         showQuestion(current);
@@ -494,48 +524,46 @@
       localStorage.setItem('surveyData', JSON.stringify(all));
     }
 
-  function showSummary() {
-    let html = '<h1><span class="thanks-text">感谢您的作答！</span></h1>';
-    html += `<div class="bar-chart" id="chart"></div>`;
-    html += `
-      <div class="tooltip-container">
-        <img src="指针.png" alt="查看统计" style="width:60px;cursor:pointer;" onclick="toggleChart()">
-        <div class="tooltip-text">想看看其他人如何选择的吗？</div>
-      </div>
-      <div id="comment-section" style="display:none;">
-        <textarea id="comment-input" rows="3" placeholder="太阳风暴抛出的高能粒子将会带走你的留言..."></textarea>
-        <div class="color-picker" id="colorPicker"></div>
-        <button onclick="submitComment()" style="margin-top:10px;">送达太阳</button>
-        <div id="comment-list"></div>
-      </div>
-      <div class="hidden-text">
-        <p>你知道吗，前面的问卷有41个问题，这里就是第42个问题，</p>
-        <p>那么，宇宙的终极是什么？</p>
-      </div>
-    `;
-    
-    document.getElementById('main').innerHTML = html;
-    renderUserChart();
-    initColorPicker();
-  }
-
-  function toggleChart() {
-    showingAllData = !showingAllData;
-    document.body.classList.remove("dark");
-    if (showingAllData) {
-      renderAllChart();
-      loadComments();
-      document.getElementById("comment-section").style.display = "block";
-      // 隐藏隐藏文字
-      document.querySelector('.hidden-text').style.display = 'none';
-    } else {
-      stopDanmu();
+    function showSummary() {
+      let html = '<h1><span class="thanks-text">感谢您的作答！</span></h1>';
+      html += `<div class="bar-chart" id="chart"></div>`;
+      html += `
+        <div class="tooltip-container">
+          <img src="指针.png" alt="查看统计" style="width:60px;cursor:pointer;" onclick="toggleChart()">
+          <div class="tooltip-text">想看看其他人如何选择的吗？</div>
+        </div>
+        <div id="comment-section" style="display:none;">
+          <textarea id="comment-input" rows="3" placeholder="太阳风暴抛出的高能粒子将会带走你的留言..."></textarea>
+          <div class="color-picker" id="colorPicker"></div>
+          <button onclick="submitComment()" style="margin-top:10px;">送达太阳</button>
+          <div id="comment-list"></div>
+        </div>
+        <div class="hidden-text">
+          <p>你知道吗，前面的问卷有41个问题，这里就是第42个问题，</p>
+          <p>那么，宇宙的终极是什么？</p>
+        </div>
+      `;
+      
+      document.getElementById('main').innerHTML = html;
       renderUserChart();
-      document.getElementById("comment-section").style.display = "none";
-      // 显示隐藏文字
-      document.querySelector('.hidden-text').style.display = 'block';
+      initColorPicker();
     }
-  }
+
+    function toggleChart() {
+      showingAllData = !showingAllData;
+      document.body.classList.remove("dark");
+      if (showingAllData) {
+        renderAllChart();
+        loadComments();
+        document.getElementById("comment-section").style.display = "block";
+        document.querySelector('.hidden-text').style.display = 'none';
+      } else {
+        stopDanmu();
+        renderUserChart();
+        document.getElementById("comment-section").style.display = "none";
+        document.querySelector('.hidden-text').style.display = 'block';
+      }
+    }
 
     function initColorPicker() {
       const picker = document.getElementById('colorPicker');
@@ -601,28 +629,16 @@
           </div>`;
       }).join('');
       
-      // 启动弹幕
       startDanmu();
-    }
-
-    function toggleChart() {
-      showingAllData = !showingAllData;
-      document.body.classList.remove("dark");
-      if (showingAllData) {
-        renderAllChart();
-        loadComments();
-        document.getElementById("comment-section").style.display = "block";
-      } else {
-        stopDanmu();
-        renderUserChart();
-        document.getElementById("comment-section").style.display = "none";
-      }
     }
 
     function submitComment() {
       const input = document.getElementById("comment-input");
       const comment = input.value.trim();
       if (!comment) return;
+      
+      // 上传评论到Google Sheets
+      addCommentToSheet(comment);
       
       let comments;
       try {
@@ -651,7 +667,6 @@
         comments = [];
       }
       
-      // 过滤无效数据
       comments = comments.filter(c => c && (c.content || c.text));
       
       const list = document.getElementById("comment-list");
@@ -663,10 +678,8 @@
     }
 
     function startDanmu() {
-      // 先清除之前的弹幕
       stopDanmu();
       
-      // 从本地存储加载评论
       let comments;
       try {
         comments = JSON.parse(localStorage.getItem("comments")) || [];
@@ -674,17 +687,14 @@
         comments = [];
       }
       
-      // 过滤无效数据
       comments = comments.filter(c => c && (c.content || c.text));
       if (comments.length === 0) return;
       
-      // 每隔一段时间创建一条弹幕
       danmuInterval = setInterval(() => {
         const randomComment = comments[Math.floor(Math.random() * comments.length)];
         createDanmu(randomComment.content || randomComment.text, randomComment.color);
       }, 2000);
       
-      // 初始创建一些弹幕
       for (let i = 0; i < 3; i++) {
         setTimeout(() => {
           const randomComment = comments[Math.floor(Math.random() * comments.length)];
@@ -707,22 +717,18 @@
       danmu.textContent = text;
       danmu.style.color = color || '#FF5252';
       
-      // 随机位置和速度
-      const top = Math.random() * 70 + 5; // 5% - 75%
-      const duration = Math.random() * 10 + 5; // 5-15秒
+      const top = Math.random() * 70 + 5;
+      const duration = Math.random() * 10 + 5;
       
       danmu.style.top = `${top}%`;
       danmu.style.animationDuration = `${duration}s`;
       
       danmuContainer.appendChild(danmu);
       
-      // 动画结束后移除元素
       danmu.addEventListener("animationend", function() {
         danmu.remove();
       });
     }
-
-    showQuestion(current);
   </script>
 </body>
 </html>
