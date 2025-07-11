@@ -464,6 +464,7 @@
       { text:"本来以为是很难的解密，结果我望向一旁的电子表，它只走了八分钟。",color:'#18FFFF'},
       { text:"感谢您的作答!",color:'#FFFF00'},
       { text:"我会努力呼吸！争取和每个大家都拥抱一次的！",color:'#FF6E40'},
+      { text:"我（我们）一直在（是的，你竟然一直在？！）注视着（从头到尾？！）你（我）。你（我们）的故事（人生）不过是才轻轻地（沉重地）启程（天翻地覆）。………好吧，我投降！（够了！）我们！（没错）（没错，我们！！）嗯……现在我可以摆脱这个讨厌的括号了。愿我们的世界之船（拜托，宇宙之船不好嘛）呃，闭嘴！！！愿我们的世界之船航行无阻！（好吧，好吧，这个行星组曲真好听）",color:'#FF6E40'},
     ];
 
     // 手动修改的问卷调查结果数据
@@ -559,29 +560,31 @@
     }
 
   function showSummary() {
-    let html = '<h1><span class="thanks-text">感谢您的作答！</span></h1>';
-    html += `<div class="bar-chart" id="chart"></div>`;
-    html += `
-      <div class="tooltip-container">
-        <img src="指针.png" alt="查看统计" style="width:60px;cursor:pointer;" onclick="toggleChart()">
-        <div class="tooltip-text">想看看其他人如何选择的吗？</div>
-      </div>
-      <div id="comment-section" style="display:none;">
-        <textarea id="comment-input" rows="3" placeholder="太阳风暴抛出的高能粒子将会带走你的留言..."></textarea>
-        <div class="color-picker" id="colorPicker"></div>
-        <button onclick="submitComment()" style="margin-top:10px;">送达太阳</button>
-        <div id="comment-list"></div>
-      </div>
-      <div class="hidden-text">
-        <p>你知道吗，前面的问卷有41个问题，这里就是第42个问题，</p>
-        <p>那么，宇宙的终极是什么？</p>
-      </div>
-    `;
-    
-    document.getElementById('main').innerHTML = html;
-    renderUserChart();
-    initColorPicker();
-  }
+  let html = '<h1><span class="thanks-text">感谢您的作答！</span></h1>';
+  html += `<div class="bar-chart" id="chart"></div>`;
+  html += `
+    <div class="tooltip-container">
+      <img src="指针.png" alt="查看统计" style="width:60px;cursor:pointer;" onclick="toggleChart()">
+      <div class="tooltip-text">想看看其他人如何选择的吗？</div>
+    </div>
+    <div id="comment-section" style="display:none;">
+      
+      <textarea id="comment-input" rows="3" placeholder="太阳风暴抛出的高能粒子将会带走你的留言..."></textarea>
+      <div class="color-picker" id="colorPicker"></div>
+      <button onclick="submitComment()" style="margin-top:10px;">送达太阳</button>
+      <div id="comment-list"></div>
+    </div>
+    <div class="hidden-text">
+      <p>你知道吗，前面的问卷有41个问题，这里就是第42个问题，</p>
+      <p>那么，宇宙的终极是什么？</p>
+    </div>
+  `;
+  
+  document.getElementById('main').innerHTML = html;
+  renderUserChart();
+  initColorPicker();
+  loadComments(); // 新增这行，确保初始加载时就显示弹幕列表
+}
 
   function sendCustomDanmu() {
   const input = document.getElementById("danmu-input");
@@ -688,22 +691,31 @@
     }
 
     function loadComments() {
-      let comments;
-      try {
-        comments = JSON.parse(localStorage.getItem("comments")) || [];
-      } catch (e) {
-        comments = [];
-      }
-      
-      comments = comments.filter(c => c && (c.content || c.text));
-      
-      const list = document.getElementById("comment-list");
-      list.innerHTML = comments.map(c => `
-        <div class="comment-item">
-          <span style="color:${c.color || '#FF5252'}">●</span> 
-          ${c.content || c.text || ''}
-        </div>`).join("");
-    }
+  // 加载用户评论
+  let userComments;
+  try {
+    userComments = JSON.parse(localStorage.getItem("comments")) || [];
+  } catch (e) {
+    userComments = [];
+  }
+
+  // 转换预设弹幕格式以匹配用户评论格式
+  const presetComments = customDanmuItems.map(item => ({
+    content: item.text,
+    color: item.color,
+    time: "系统预设"
+  }));
+
+  // 合并两种弹幕（预设在前）
+  const allComments = [...presetComments, ...userComments];
+
+  const list = document.getElementById("comment-list");
+  list.innerHTML = allComments.map(c => `
+    <div class="comment-item">
+      <span style="color:${c.color || '#FF5252'}">●</span> 
+      ${c.content || ''}
+    </div>`).join("");
+}
 
     function startDanmu() {
   stopDanmu();
