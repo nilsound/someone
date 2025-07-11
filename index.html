@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>：你注意到一张问卷</title>
-  <style>
+<style>
     :root {
       --bg-color: #f9f9f9;
       --text-color: #000;
@@ -212,6 +212,7 @@
       box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
     }
     
+    /* 弹幕样式 */
     .danmu-container {
       position: fixed;
       top: 0;
@@ -236,6 +237,7 @@
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
     
+    /* 进度条样式 */
     .progress-container {
       width: 100%;
       background-color: #e0e0e0;
@@ -258,19 +260,41 @@
       color: var(--text-color);
     }
     
-    .hidden-text {
-      opacity: 0;
-      transition: opacity 0.3s;
-      margin-top: 30px;
-      font-size: 16px;
-      line-height: 1.6;
-      cursor: default;
-    }
+  /* 修改后的CSS样式 */
+  .hidden-text {
+    opacity: 0;
+    transition: opacity 0.3s;
+    margin-top: 30px;
+    font-size: 16px;
+    line-height: 1.6;
+    cursor: default;
+  }
 
+  .hidden-text:hover {
+    opacity: 1;
+  }
+  
+  .hidden-text:hover {
+    opacity: 1;
+  }
+
+
+    
     .hidden-text:hover {
       opacity: 1;
     }
     
+    @keyframes danmu {
+      from { transform: translateX(100vw); }
+      to { transform: translateX(-100%); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    /* 新增感谢文字样式 */
     .thanks-text {
       position: relative;
       display: inline-block;
@@ -294,6 +318,7 @@
       opacity: 0.6;
     }
     
+    /* 颜色选择器样式 */
     .color-picker {
       display: flex;
       gap: 8px;
@@ -319,6 +344,7 @@
       box-shadow: 0 0 5px rgba(0,0,0,0.3);
     }
     
+    /* 响应式调整 */
     @media (max-width: 480px) {
       .container {
         padding: 25px;
@@ -342,16 +368,6 @@
         width: 100%;
         margin-top: 5px;
       }
-    }
-    
-    @keyframes danmu {
-      from { transform: translateX(100vw); }
-      to { transform: translateX(-100%); }
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
     }
   </style>
 </head>
@@ -425,19 +441,84 @@
       "你是否爱着你创造出的一切？"
     ];
 
-    //Google Apps Script Web应用URL
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycbwC-BRENcDC78Y-DlO_ZnGXr8S8X-w0rx4gh6zMvj6miiA8krXqOMX5i_iMdpFNJ2wX/exec';
-    
+    // 预设颜色选项
+    const colorOptions = [
+      '#FF5252', '#FF4081', '#E040FB', '#7C4DFF', 
+      '#536DFE', '#448AFF', '#40C4FF', '#18FFFF', 
+      '#64FFDA', '#69F0AE', '#B2FF59', '#EEFF41', 
+      '#FFFF00', '#FFD740', '#FFAB40', '#FF6E40'
+    ];
+
+    // 自定义弹幕数据
+    const customDanmuItems = [
+      { text:"有太多话不知道该怎么说出口，此时此刻，我所创造的，被谁注视着。 “太好了你被看到了” 不是他，而是我。 就像是被击中了。我也在这条无尽头的长河里阿，我也被太阳光照射着。 好开心 在奔波着行走着，哭着，笑着。 我看到你了。 我看到你们了。 好想一直画下去，想要一直延续我们的故事。 河流流淌， 不要停下来。",color:'#FF5252'},
+      { text:"啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊。。。。。。最喜欢最伟大。。。。。。。。有很多想说的但是又不知道说什么反正很高兴.... .玩得最开心也最感动的企划就像人生一样光怪陆离有笑有泪，很美味的味道，我们可以成为任何东西或者说我们可以创造出任何东西，这就是创作最有趣的地方呀啊哈哈哈哈哈哈哈哈哈哈哈哈哈好爽",color:'#FFD740'},
+      { text:"这层层叠叠的阳光下，我的人生开始不可阻挡地燃烧着向前，在皮囊和言语、玫瑰和香槟都燃尽之后，我终于看到我的本真，那一切的爱如此纯粹而朴实，我能够触摸它的形状，那替我爱着我的，替我爱着一切我爱的。",color:'#FF6E40'},
+      { text:"谁来救救我，太阳风暴你害人不浅",color:'#FF5252'},
+      { text:"回来吧斯塔特航特我最骄傲的信仰",color:'#FF5252'},
+      { text:"真有趣啊，我从未想过太阳风暴会带给我这样的机遇……总之，以后还请多多关照^^",color:'#FF5252'},
+      { text:"和各位，无论是过去未来亦或者是现在的相遇都相当有趣，我会用数据库记住的，你们都将是恒定量中的变量",color:'#FF5252'},
+      { text:"我知道的，我不是收音机死去的人也不会变成星星。但是，我所见过，听过，知晓过的你们，我相信你们的存在，直到永远。",color:'#448AFF'},
+      { text:"我爱世界!",color:'#FF5252'},
+      { text:"愿每一个人都可以跳出困住自己的鱼缸，赞美太阳!赞美太阳!",color:'#69F0AE'},
+      { text:"本来以为是很难的解密，结果我望向一旁的电子表，它只走了八分钟。",color:'#18FFFF'},
+      { text:"感谢您的作答!",color:'#FFFF00'},
+      { text:"我会努力呼吸！争取和每个大家都拥抱一次的！",color:'#FF6E40'},
+    ];
+
+    // 手动修改的问卷调查结果数据
+    const manualSurveyData = {
+      0: { 是: 15, 否: 3 },
+      1: { 是: 12, 否: 6 },
+      2: { 是: 5, 否: 13 },
+      3: { 是: 8, 否: 10 },
+      4: { 是: 7, 否: 11 },
+      5: { 是: 4, 否: 14 },
+      6: { 是: 9, 否: 9 },
+      7: { 是: 11, 否: 7 },
+      8: { 是: 6, 否: 12 },
+      9: { 是: 10, 否: 8 },
+      10: { 是: 3, 否: 15 },
+      11: { 是: 14, 否: 4 },
+      12: { 是: 13, 否: 5 },
+      13: { 是: 10, 否: 8 },
+      14: { 是: 12, 否: 6 },
+      15: { 是: 14, 否: 4 },
+      16: { 是: 10, 否: 8 },
+      17: { 是: 12, 否: 6 },
+      18: { 是: 10, 否: 8 },
+      19: { 是: 9, 否: 9 },
+      20: { 是: 12, 否: 6 },
+      21: { 是: 7, 否: 11 },
+      22: { 是: 5, 否: 13 },
+      23: { 是: 8, 否: 10 },
+      24: { 是: 11, 否: 7 },
+      25: { 是: 4, 否: 14 },
+      26: { 是: 6, 否: 12 },
+      27: { 是: 10, 否: 8 },
+      28: { 是: 5, 否: 13 },
+      29: { 是: 14, 否: 4 },
+      30: { 是: 13, 否: 5 },
+      31: { 是: 12, 否: 6 },
+      32: { 是: 10, 否: 8 },
+      33: { 是: 16, 否: 2 },
+      34: { 是: 18, 否: 0 },
+      35: { 是: 18, 否: 0 },
+      36: { 是: 18, 否: 0 },
+      37: { 是: 10, 否: 8 },
+      38: { 是: 18, 否: 0 },
+      39: { 是: 18, 否: 0 },
+      40: { 是: 18, 否: 0 },
+      41: { 是: 18, 否: 0 }
+    };
+
     let answers = [];
     let current = 0;
     let showingAllData = false;
     let danmuInterval;
     let selectedColor = '#FF5252';
 
-    // 页面加载时直接显示问题
-    window.onload = function() {
-      showQuestion(current);
-    };
+    
 
     function showQuestion(index) {
       document.getElementById('questionText').innerText = questions[index];
@@ -455,55 +536,8 @@
       document.getElementById('progressText').textContent = `问题 ${current}/${total}`;
     }
 
-    // 更新回答统计数据到Google Sheets
-    async function updateAnswerStats(questionIndex, answer) {
-      try {
-        const response = await fetch(scriptUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            type: 'answer',
-            questionIndex: questionIndex,
-            answer: answer
-          })
-        });
-        
-        const result = await response.json();
-        console.log(`Updated question ${questionIndex + 1} answer ${answer}`, result);
-      } catch (error) {
-        console.error('Error updating answer stats:', error);
-      }
-    }
-
-    // 添加评论到表格
-    async function addCommentToSheet(comment) {
-      try {
-        const response = await fetch(scriptUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            type: 'comment',
-            comment: comment
-          })
-        });
-        
-        const result = await response.json();
-        console.log('Comment added to sheet', result);
-      } catch (error) {
-        console.error('Error adding comment to sheet:', error);
-      }
-    }
-
     function nextQuestion(answer) {
       answers.push(answer);
-      
-      // 上传答案到Google Sheets
-      updateAnswerStats(current, answer);
-      
       current++;
       if (current < questions.length) {
         showQuestion(current);
@@ -524,30 +558,39 @@
       localStorage.setItem('surveyData', JSON.stringify(all));
     }
 
-    function showSummary() {
-      let html = '<h1><span class="thanks-text">感谢您的作答！</span></h1>';
-      html += `<div class="bar-chart" id="chart"></div>`;
-      html += `
-        <div class="tooltip-container">
-          <img src="指针.png" alt="查看统计" style="width:60px;cursor:pointer;" onclick="toggleChart()">
-          <div class="tooltip-text">想看看其他人如何选择的吗？</div>
-        </div>
-        <div id="comment-section" style="display:none;">
-          <textarea id="comment-input" rows="3" placeholder="太阳风暴抛出的高能粒子将会带走你的留言..."></textarea>
-          <div class="color-picker" id="colorPicker"></div>
-          <button onclick="submitComment()" style="margin-top:10px;">送达太阳</button>
-          <div id="comment-list"></div>
-        </div>
-        <div class="hidden-text">
-          <p>你知道吗，前面的问卷有41个问题，这里就是第42个问题，</p>
-          <p>那么，宇宙的终极是什么？</p>
-        </div>
-      `;
-      
-      document.getElementById('main').innerHTML = html;
-      renderUserChart();
-      initColorPicker();
-    }
+  function showSummary() {
+    let html = '<h1><span class="thanks-text">感谢您的作答！</span></h1>';
+    html += `<div class="bar-chart" id="chart"></div>`;
+    html += `
+      <div class="tooltip-container">
+        <img src="指针.png" alt="查看统计" style="width:60px;cursor:pointer;" onclick="toggleChart()">
+        <div class="tooltip-text">想看看其他人如何选择的吗？</div>
+      </div>
+      <div id="comment-section" style="display:none;">
+        <textarea id="comment-input" rows="3" placeholder="太阳风暴抛出的高能粒子将会带走你的留言..."></textarea>
+        <div class="color-picker" id="colorPicker"></div>
+        <button onclick="submitComment()" style="margin-top:10px;">送达太阳</button>
+        <div id="comment-list"></div>
+      </div>
+      <div class="hidden-text">
+        <p>你知道吗，前面的问卷有41个问题，这里就是第42个问题，</p>
+        <p>那么，宇宙的终极是什么？</p>
+      </div>
+    `;
+    
+    document.getElementById('main').innerHTML = html;
+    renderUserChart();
+    initColorPicker();
+  }
+
+  function sendCustomDanmu() {
+  const input = document.getElementById("danmu-input");
+  const text = input.value.trim();
+  if (text) {
+    createDanmu(text, selectedColor);
+    input.value = "";
+  }
+}
 
     function toggleChart() {
       showingAllData = !showingAllData;
@@ -598,27 +641,15 @@
     }
 
     function renderAllChart() {
-      let all;
-      try {
-        all = JSON.parse(localStorage.getItem('surveyData')) || [];
-      } catch (e) {
-        all = [];
-      }
-      
-      let summary = Array(questions.length).fill(0).map(() => ({ 是: 0, 否: 0 }));
-      all.forEach(entry => {
-        entry.forEach((ans, i) => {
-          if (ans === '是') summary[i]['是']++;
-          else if (ans === '否') summary[i]['否']++;
-        });
-      });
+      const summary = manualSurveyData;
       
       const chart = document.getElementById("chart");
       chart.innerHTML = questions.map((q, i) => {
-        let yes = summary[i]['是'];
-        let no = summary[i]['否'];
+        let yes = summary[i] ? summary[i]['是'] : 0;
+        let no = summary[i] ? summary[i]['否'] : 0;
         let total = yes + no || 1;
         let yesPct = Math.round((yes / total) * 100);
+        
         return `
           <div class="bar-row">
             <div class="bar-label">${q}</div>
@@ -636,9 +667,6 @@
       const input = document.getElementById("comment-input");
       const comment = input.value.trim();
       if (!comment) return;
-      
-      // 上传评论到Google Sheets
-      addCommentToSheet(comment);
       
       let comments;
       try {
@@ -678,30 +706,41 @@
     }
 
     function startDanmu() {
-      stopDanmu();
-      
-      let comments;
-      try {
-        comments = JSON.parse(localStorage.getItem("comments")) || [];
-      } catch (e) {
-        comments = [];
-      }
-      
-      comments = comments.filter(c => c && (c.content || c.text));
-      if (comments.length === 0) return;
-      
-      danmuInterval = setInterval(() => {
-        const randomComment = comments[Math.floor(Math.random() * comments.length)];
-        createDanmu(randomComment.content || randomComment.text, randomComment.color);
-      }, 2000);
-      
-      for (let i = 0; i < 3; i++) {
-        setTimeout(() => {
-          const randomComment = comments[Math.floor(Math.random() * comments.length)];
-          createDanmu(randomComment.content || randomComment.text, randomComment.color);
-        }, i * 500);
-      }
-    }
+  stopDanmu();
+  
+  // 加载用户评论
+  let comments;
+  try {
+    comments = JSON.parse(localStorage.getItem("comments")) || [];
+  } catch (e) {
+    comments = [];
+  }
+  
+  // 合并预设弹幕和用户评论
+  const allDanmuItems = [
+    ...customDanmuItems,
+    ...comments.map(c => ({
+      text: c.content || c.text,
+      color: c.color || selectedColor
+    }))
+  ].filter(item => item.text); // 过滤空文本
+  
+  if (allDanmuItems.length === 0) return;
+  
+  // 定时发送弹幕
+  danmuInterval = setInterval(() => {
+    const randomItem = allDanmuItems[Math.floor(Math.random() * allDanmuItems.length)];
+    createDanmu(randomItem.text, randomItem.color);
+  }, 2000);
+  
+  // 初始发送几条弹幕
+  for (let i = 0; i < 3; i++) {
+    setTimeout(() => {
+      const randomItem = allDanmuItems[Math.floor(Math.random() * allDanmuItems.length)];
+      createDanmu(randomItem.text, randomItem.color);
+    }, i * 500);
+  }
+}
     
     function stopDanmu() {
       clearInterval(danmuInterval);
@@ -729,6 +768,8 @@
         danmu.remove();
       });
     }
+
+    showQuestion(current);
   </script>
 </body>
 </html>
